@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "festy-crew"
+version = "0.1.0"
+description = "CrewAI agent system for discovering indie-pop-aligned Asian music festivals"
+requires-python = ">=3.10"
+dependencies = [
+    "crewai[tools]>=0.80.0,<1.0.0",
+    "firecrawl-py>=1.0.0",
+    "requests>=2.31.0",
+    "pandas>=2.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

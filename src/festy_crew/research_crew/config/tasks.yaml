@@ -1,0 +1,124 @@
+discover_festivals_task:
+  description: >
+    Research and discover Asian music festivals that feature indie, alternative,
+    or independent music. We are looking for recurring festivals to attend in
+    {target_year} — so search for recent editions (2024, 2025, 2026) since many
+    {target_year} editions won't be announced yet. A festival that ran in 2025
+    will almost certainly run again in {target_year}.
+
+    Be broad and inclusive. Small, niche, boutique, and emerging festivals are
+    especially welcome. More candidates is always better at this stage.
+
+    STEP 1 - Run ALL of these Firecrawl web searches:
+    1. "best indie music festivals Asia 2026"
+    2. "best indie music festivals Asia 2025"
+    3. "alternative music festivals Japan 2026"
+    4. "K-indie festival Korea 2026"
+    5. "Korean indie rock music festival Seoul Busan Daegu"
+    6. "indie pop music festival Thailand 2026"
+    7. "indie music festival Philippines 2026"
+    8. "indie music festival Taiwan 2026"
+    9. "indie music festival Indonesia Singapore 2026"
+    10. "J-indie music festival Japan 2025 2026"
+    11. "Fuji Rock Summer Sonic Spring Sensation Japan lineup"
+    12. "indie alternative festival Asia annual recurring"
+    13. "boutique music festival Asia indie underground"
+    14. "music festival Asia indie pop dream pop shoegaze 2025 2026"
+
+    STEP 2 - Scrape ALL of these pages in full — they are curated lists of
+    exactly the festivals we want:
+    - https://ocultmag.com/2026/01/11/the-asian-music-festivals-that-matter-in-2026/
+    - https://www.sassyhongkong.com/travel-short-haul-music-festivals-in-asia-rave-party/
+    - https://thesmartlocal.com/read/music-festivals-asia/
+    - https://thebeat.asia/the-list/whats-on/music-festivals-in-asia-2025
+    - https://www.timeout.com/asia/music/best-music-festivals-in-asia
+    - https://www.musicfestivalwizard.com/festival-guide/asia-festivals/
+    - https://www.musicfestivalwizard.com/festival-guide/south-korea/
+    - https://www.musicfestivalwizard.com/festival-guide/japan/
+    - https://www.musicfestivalwizard.com/festival-guide/thailand/
+    - https://www.musicfestivalwizard.com/festival-guide/philippines/
+    - https://en.wikipedia.org/wiki/List_of_music_festivals_in_South_Korea
+    - https://en.wikipedia.org/wiki/List_of_music_festivals_in_Japan
+    - https://www.bandwagon.asia
+    - https://koreatodo.com/top-festivals-seoul-korea
+
+    STEP 3 - For every festival found, collect: official name, country,
+    location/venue, dates or "TBA / recurring", website URL, genre description,
+    known or past acts, brief description. Note if it is a recurring annual festival.
+
+    Target 40-100 candidates. Do NOT pre-filter — include everything.
+
+  expected_output: >
+    A numbered list of 40-100 Asian music festivals (recent or recurring editions),
+    each entry containing:
+    - Name: [Festival Name]
+    - Country: [Country]
+    - Location: [City/Venue]
+    - Dates: [Specific dates, season, or "Annual / TBA for {target_year}"]
+    - Website: [URL]
+    - Description: [Brief description of the festival]
+    - Genres: [Music genres featured]
+    - Known Acts: [Artists confirmed or historically featured, or "Unknown"]
+
+    Include every candidate found regardless of genre. More is better.
+  agent: festival_researcher
+
+score_and_filter_festivals_task:
+  description: >
+    Review the festival list from the researcher and score each festival's
+    alignment with indie-pop and related alternative music genres.
+
+    Be GENEROUS — when in doubt, include rather than exclude.
+    Small, niche, and lesser-known festivals are exactly what we want.
+
+    SCORING CRITERIA:
+
+    HIGH (strong indie alignment — definitely include):
+    - Core identity is indie, alternative, or independent music
+    - Has booked or historically featured artists like: Mitski, Arlo Parks,
+      Japanese Breakfast, Khruangbin, The xx, Beach House, Tame Impala, CHAI,
+      go!go!vanillas, Phum Viphurit, Hyukoh, No Party For Cao Dong, Sunset Rollercoaster,
+      Grapevine, Indigo la End, YEW, Peder Elias, YENTED & MRCH, Øneheart & Flawed Mangoes, Patrick Brasca, elijah woods, 
+      Keenan Te, The Ge, Jess Benko, tiffi & Dress, Ukiyo, Slowboy & Eluera, or similar indie/alt acts
+    - Boutique, DIY, or independent festival ethos
+    - Strong indie-folk, dream pop, shoegaze, synth-pop, chillwave, K-indie,
+      J-indie, or indie rock presence
+
+    MEDIUM (partial or possible indie alignment — include these):
+    - Mixed programming that includes any indie or alternative acts
+    - General rock festivals (likely to have indie acts on bill)
+    - Multi-genre festivals with diverse lineups
+    - Festivals with limited English info — give benefit of the doubt
+    - Electronic music that is not pure mainstream EDM
+    - Any festival where genre is unclear but it sounds independent or non-mainstream
+
+    LOW (exclude ONLY if clearly irrelevant):
+    - Explicitly pure K-pop idol showcases with zero other genres
+    - Explicitly pure mainstream EDM/rave events
+    - Explicitly pure heavy metal with no other genres
+    - Classical or jazz only
+
+    IMPORTANT: If you are unsure, score it MEDIUM and include it. The user
+    will review manually. Never exclude a festival just because you lack info.
+
+    Target output: 20-50 festivals (aim for the higher end).
+
+  expected_output: >
+    A structured list of 20-50 festivals with High or Medium genre fit scores.
+    Format each entry as:
+
+    - Name: [Festival Name]
+    - Country: [Country]
+    - Location: [City/Venue]
+    - Dates: [Dates, season, or "Annual / TBA for {target_year}"]
+    - Website: [URL]
+    - Description: [Brief description]
+    - Genres: [Music genres featured]
+    - Genre Fit Score: [High | Medium]
+    - Why It Fits: [1-2 sentences. If uncertain, say so and still include it.]
+    - Known Acts: [Artists or "Unknown"]
+
+    Aim for the higher end of the range. Include all borderline cases.
+  agent: genre_filter_analyst
+  context:
+    - discover_festivals_task

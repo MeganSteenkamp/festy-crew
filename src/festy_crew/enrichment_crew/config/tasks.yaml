@@ -1,0 +1,55 @@
+find_contacts_task:
+  description: >
+    Find contact information for the festival "{festival_name}" at {website}.
+
+    STEPS:
+    1. Use WebsiteContactFinderTool with {website} to crawl contact pages
+       (/contact, /about, /team, /press, /organizers, /submissions)
+    2. If the website finder returns limited results, use FirecrawlScrapeTool
+       directly on {website} and any specific contact pages you can identify
+    3. Extract:
+       - Organizer/promoter names (individuals or companies)
+       - Any email addresses visible on the site
+       - The website domain (for Hunter lookup in next task)
+       - Any social media or booking contact info
+       - Raw notes about what you found
+
+  expected_output: >
+    A summary containing:
+    - Festival Name: {festival_name}
+    - Organizer/Company Names found: [names or "None found"]
+    - Email addresses found on site: [emails or "None visible"]
+    - Domain: [extracted domain, e.g. festival.com]
+    - Additional contact notes: [booking email hints, social handles, etc.]
+  agent: contact_finder
+
+enrich_emails_task:
+  description: >
+    Using the contact information found for "{festival_name}", enrich and verify
+    the email data using Hunter.io tools.
+
+    STEPS:
+    1. Extract the domain from {website} (strip https://, www., and paths)
+    2. Run HunterDomainSearchTool with the extracted domain to find associated emails
+    3. For any promising emails found (either on-site or via Hunter), run
+       HunterEmailVerifierTool to verify validity
+    4. Synthesize all findings into a confidence rating:
+       - "High": Direct email found on site AND verified by Hunter
+       - "Medium": Email found via Hunter domain search but not directly on site,
+         OR found on site but not verified
+       - "Low": No emails found, or verification failed
+
+    Note: If HUNTER_API_KEY is not configured, rate the confidence based only
+    on what was found directly on the website.
+
+  expected_output: >
+    Structured contact data for {festival_name}:
+    - festival_name: {festival_name}
+    - organizer_name: [best name found, or "Not Found"]
+    - emails: [comma-separated list of emails, or empty]
+    - confidence: [High | Medium | Low]
+    - source: [where emails came from: "website", "hunter", "both", or "none"]
+    - notes: [any relevant details about the contact data quality]
+  agent: email_enricher
+  context:
+    - find_contacts_task

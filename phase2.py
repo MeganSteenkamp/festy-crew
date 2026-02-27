@@ -18,7 +18,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from festy_crew.enrichment_crew.crew import EnrichmentCrew
-from festy_crew.models.festival import EnrichedContact
+from festy_crew.models.festival import EnrichedContact, IndividualContact
 from festy_crew.utils.csv_handler import enriched_to_csv, load_approved_festivals
 
 
@@ -96,7 +96,11 @@ def main():
                     notes=f"Could not parse structured output. Raw: {str(crew_result.raw)[:200]}",
                 )
             results.append(contact)
-            print(f"  Confidence: {contact.confidence} | Emails: {contact.emails or 'None found'}")
+            n = len(contact.contacts)
+            print(f"  Confidence: {contact.confidence} | Contacts found: {n}")
+            for person in contact.contacts:
+                role_str = f" ({person.role})" if person.role else ""
+                print(f"    - {person.name or 'Unknown'}{role_str}: {person.email or 'no email'}")
 
         except Exception as e:
             print(f"  Error enriching {name}: {e}")
@@ -115,13 +119,15 @@ def main():
     high = sum(1 for r in results if r.confidence == "High")
     medium = sum(1 for r in results if r.confidence == "Medium")
     low = sum(1 for r in results if r.confidence == "Low")
+    total_contacts = sum(len(r.contacts) for r in results)
 
     print(f"\n{'=' * 64}")
     print(f"Results saved to: {output_path}")
     print(f"Total festivals processed: {total}")
-    print(f"  High confidence contacts:   {high}")
-    print(f"  Medium confidence contacts: {medium}")
-    print(f"  Low confidence / not found: {low}")
+    print(f"Total individual contacts found: {total_contacts}")
+    print(f"  High confidence:   {high} festivals")
+    print(f"  Medium confidence: {medium} festivals")
+    print(f"  Low / not found:   {low} festivals")
 
     print(f"\n{DISCLAIMER}")
     print("=" * 64)

@@ -47,8 +47,14 @@ def main():
 
     inputs = {
         "target_year": "2026",
-        "regions": "Asia (Japan, South Korea, Thailand, Philippines, Indonesia, Taiwan, India, and more)",
-        "genre_focus": "indie pop, dream pop, shoegaze, synth-pop, chillwave, indie folk, indie electronic",
+        "regions": (
+            "Asia (Japan, South Korea, Thailand, Philippines, Indonesia, Taiwan, "
+            "India, Vietnam, Malaysia, Singapore, Hong Kong, China, and more)"
+        ),
+        "genre_focus": (
+            "indie pop, dream pop, shoegaze, synth-pop, chillwave, indie folk, "
+            "indie electronic, bedroom pop, indie rock, lo-fi"
+        ),
     }
 
     print("Starting festival discovery...\n")

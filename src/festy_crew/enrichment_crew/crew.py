@@ -1,5 +1,6 @@
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
+from crewai_tools import SerperDevTool
 
 from festy_crew.models.festival import EnrichedContact
 from festy_crew.tools.firecrawl_tool import FirecrawlScrapeTool, WebsiteContactFinderTool
@@ -17,7 +18,7 @@ class EnrichmentCrew:
     def contact_finder(self) -> Agent:
         return Agent(
             config=self.agents_config["contact_finder"],
-            tools=[WebsiteContactFinderTool(), FirecrawlScrapeTool()],
+            tools=[WebsiteContactFinderTool(), FirecrawlScrapeTool(), SerperDevTool()],
             verbose=True,
         )
 

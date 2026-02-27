@@ -10,20 +10,42 @@ discover_festivals_task:
     especially welcome. More candidates is always better at this stage.
 
     STEP 1 - Run ALL of these Firecrawl web searches:
-    1. "best indie music festivals Asia 2026"
-    2. "best indie music festivals Asia 2025"
-    3. "alternative music festivals Japan 2026"
-    4. "K-indie festival Korea 2026"
-    5. "Korean indie rock music festival Seoul Busan Daegu"
-    6. "indie pop music festival Thailand 2026"
-    7. "indie music festival Philippines 2026"
-    8. "indie music festival Taiwan 2026"
-    9. "indie music festival Indonesia Singapore 2026"
-    10. "J-indie music festival Japan 2025 2026"
-    11. "Fuji Rock Summer Sonic Spring Sensation Japan lineup"
-    12. "indie alternative festival Asia annual recurring"
-    13. "boutique music festival Asia indie underground"
-    14. "music festival Asia indie pop dream pop shoegaze 2025 2026"
+    1.  "music festivals Japan 2025 2026"
+    2.  "indie alternative music festivals Japan"
+    3.  "boutique independent music festival Japan"
+    4.  "music festivals South Korea 2025 2026"
+    5.  "indie alternative music festivals Korea"
+    6.  "boutique independent music festival Korea"
+    7.  "music festivals Thailand 2025 2026"
+    8.  "indie alternative music festivals Thailand"
+    9.  "boutique independent music festival Thailand"
+    10. "music festivals Philippines 2025 2026"
+    11. "indie alternative music festivals Philippines"
+    12. "boutique independent music festival Philippines"
+    13. "music festivals Taiwan 2025 2026"
+    14. "indie alternative music festivals Taiwan"
+    15. "boutique independent music festival Taiwan"
+    16. "music festivals Indonesia 2025 2026"
+    17. "indie alternative music festivals Indonesia"
+    18. "boutique independent music festival Indonesia"
+    19. "music festivals Singapore 2025 2026"
+    20. "indie alternative music festivals Singapore"
+    21. "boutique independent music festival Singapore"
+    22. "music festivals India 2025 2026"
+    23. "indie alternative music festivals India"
+    24. "boutique independent music festival India"
+    25. "music festivals Vietnam 2025 2026"
+    26. "indie alternative music festivals Vietnam"
+    27. "boutique independent music festival Vietnam"
+    28. "music festivals Malaysia 2025 2026"
+    29. "indie alternative music festivals Malaysia"
+    30. "boutique independent music festival Malaysia"
+    31. "music festivals Hong Kong 2025 2026"
+    32. "indie alternative music festivals Hong Kong"
+    33. "boutique independent music festival Hong Kong"
+    34. "music festivals China 2025 2026"
+    35. "indie alternative music festivals China"
+    36. "boutique independent music festival China"
 
     STEP 2 - Scrape ALL of these pages in full — they are curated lists of
     exactly the festivals we want:
@@ -37,19 +59,28 @@ discover_festivals_task:
     - https://www.musicfestivalwizard.com/festival-guide/japan/
     - https://www.musicfestivalwizard.com/festival-guide/thailand/
     - https://www.musicfestivalwizard.com/festival-guide/philippines/
+    - https://www.musicfestivalwizard.com/festival-guide/india/
+    - https://www.musicfestivalwizard.com/festival-guide/singapore/
+    - https://www.musicfestivalwizard.com/festival-guide/malaysia/
     - https://en.wikipedia.org/wiki/List_of_music_festivals_in_South_Korea
     - https://en.wikipedia.org/wiki/List_of_music_festivals_in_Japan
+    - https://en.wikipedia.org/wiki/List_of_music_festivals_in_India
+    - https://en.wikipedia.org/wiki/List_of_music_festivals_in_Singapore
     - https://www.bandwagon.asia
     - https://koreatodo.com/top-festivals-seoul-korea
+    - https://www.timeout.com/singapore/music/best-music-festivals-in-singapore
+    - https://www.timeout.com/hong-kong/music/best-music-festivals-in-hong-kong
 
     STEP 3 - For every festival found, collect: official name, country,
     location/venue, dates or "TBA / recurring", website URL, genre description,
     known or past acts, brief description. Note if it is a recurring annual festival.
+    Also note any information about open submissions, booking applications, or
+    how emerging/unknown artists can apply to perform — this is very valuable.
 
-    Target 40-100 candidates. Do NOT pre-filter — include everything.
+    Target 60-120 candidates. Do NOT pre-filter — include everything.
 
   expected_output: >
-    A numbered list of 40-100 Asian music festivals (recent or recurring editions),
+    A numbered list of 60-120 Asian music festivals (recent or recurring editions),
     each entry containing:
     - Name: [Festival Name]
     - Country: [Country]
@@ -59,14 +90,20 @@ discover_festivals_task:
     - Description: [Brief description of the festival]
     - Genres: [Music genres featured]
     - Known Acts: [Artists confirmed or historically featured, or "Unknown"]
+    - Submission Info: [Open call details, application info, deadline, or "Unknown"]
 
     Include every candidate found regardless of genre. More is better.
   agent: festival_researcher
+
 
 score_and_filter_festivals_task:
   description: >
     Review the festival list from the researcher and score each festival's
     alignment with indie-pop and related alternative music genres.
+
+    This list is specifically for an UP-AND-COMING ARTIST seeking performance
+    opportunities. Smaller, boutique, and emerging festivals are MORE valuable
+    than massive ones — they are more likely to book unknown acts.
 
     Be GENEROUS — when in doubt, include rather than exclude.
     Small, niche, and lesser-known festivals are exactly what we want.
@@ -75,14 +112,16 @@ score_and_filter_festivals_task:
 
     HIGH (strong indie alignment — definitely include):
     - Core identity is indie, alternative, or independent music
-    - Has booked or historically featured artists like: Mitski, Arlo Parks,
-      Japanese Breakfast, Khruangbin, The xx, Beach House, Tame Impala, CHAI,
-      go!go!vanillas, Phum Viphurit, Hyukoh, No Party For Cao Dong, Sunset Rollercoaster,
-      Grapevine, Indigo la End, YEW, Peder Elias, YENTED & MRCH, Øneheart & Flawed Mangoes, Patrick Brasca, elijah woods, 
-      Keenan Te, The Ge, Jess Benko, tiffi & Dress, Ukiyo, Slowboy & Eluera, or similar indie/alt acts
+    - Has booked or historically featured indie/alt artists like: Mitski, Arlo Parks,
+      Japanese Breakfast, Khruangbin, The xx, Beach House, Tame Impala, Mac DeMarco,
+      Cigarettes After Sex, Rex Orange County, CHAI, go!go!vanillas, Phum Viphurit,
+      Hyukoh, No Party For Cao Dong, Sunset Rollercoaster, Grapevine, Indigo la End,
+      Tempalay, Yogee New Waves, or any similar indie/dream pop/shoegaze/synth-pop artist
     - Boutique, DIY, or independent festival ethos
     - Strong indie-folk, dream pop, shoegaze, synth-pop, chillwave, K-indie,
-      J-indie, or indie rock presence
+      J-indie, bedroom pop, or indie rock presence
+    - Festivals known for featuring or breaking emerging/new artists
+    - Festivals with open submissions or an application process for unknown artists
 
     MEDIUM (partial or possible indie alignment — include these):
     - Mixed programming that includes any indie or alternative acts
@@ -91,6 +130,8 @@ score_and_filter_festivals_task:
     - Festivals with limited English info — give benefit of the doubt
     - Electronic music that is not pure mainstream EDM
     - Any festival where genre is unclear but it sounds independent or non-mainstream
+    - Festivals in India, Vietnam, Malaysia, Singapore, Hong Kong, China where indie
+      scenes are growing — default to Medium if uncertain
 
     LOW (exclude ONLY if clearly irrelevant):
     - Explicitly pure K-pop idol showcases with zero other genres
@@ -100,11 +141,12 @@ score_and_filter_festivals_task:
 
     IMPORTANT: If you are unsure, score it MEDIUM and include it. The user
     will review manually. Never exclude a festival just because you lack info.
+    Boutique and emerging festivals score HIGHER, not lower.
 
-    Target output: 20-50 festivals (aim for the higher end).
+    Target output: 30-60 festivals (aim for the higher end).
 
   expected_output: >
-    A structured list of 20-50 festivals with High or Medium genre fit scores.
+    A structured list of 30-60 festivals with High or Medium genre fit scores.
     Format each entry as:
 
     - Name: [Festival Name]
@@ -117,6 +159,7 @@ score_and_filter_festivals_task:
     - Genre Fit Score: [High | Medium]
     - Why It Fits: [1-2 sentences. If uncertain, say so and still include it.]
     - Known Acts: [Artists or "Unknown"]
+    - Submission Info: [Open call details, application info, or "Unknown"]
 
     Aim for the higher end of the range. Include all borderline cases.
   agent: genre_filter_analyst

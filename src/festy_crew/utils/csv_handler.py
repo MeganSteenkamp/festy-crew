@@ -4,7 +4,7 @@ from typing import List
 
 import pandas as pd
 
-from festy_crew.models.festival import EnrichedContact, Festival, FestivalList
+from festy_crew.models.festival import EnrichedContact, Festival, FestivalList, IndividualContact
 
 
 def festivals_to_csv(crew_output, output_path: str) -> pd.DataFrame:
@@ -26,7 +26,8 @@ def festivals_to_csv(crew_output, output_path: str) -> pd.DataFrame:
         df = pd.DataFrame(
             columns=[
                 "name", "country", "location", "dates", "genres", "website",
-                "description", "genre_fit_score", "why_it_fits", "known_acts", "Approved",
+                "description", "genre_fit_score", "why_it_fits", "known_acts",
+                "submission_info", "Approved",
             ]
         )
         df.to_csv(output_path, index=False)
@@ -82,7 +83,7 @@ def load_approved_festivals(csv_path: str) -> List[dict]:
         )
         return []
 
-    approved = df[df["Approved"].str.strip().str.lower() == "yes"]
+    approved = df[df["Approved"].fillna("").str.strip().str.lower() == "yes"]
     records = approved.to_dict(orient="records")
     print(f"Loaded {len(records)} approved festivals from {csv_path}")
     return records
@@ -91,30 +92,47 @@ def load_approved_festivals(csv_path: str) -> List[dict]:
 def enriched_to_csv(
     contacts: List[EnrichedContact], original_csv: str, output_path: str
 ) -> pd.DataFrame:
-    """Merge enriched contact data with the original festival CSV and save."""
+    """Merge enriched contact data with the original festival CSV.
+
+    Expands to one row per individual contact. Festival metadata is repeated
+    across rows for the same festival.
+    """
     try:
         original_df = pd.read_csv(original_csv)
     except FileNotFoundError:
         print(f"Warning: Original CSV not found at {original_csv}. Creating standalone output.")
         original_df = pd.DataFrame()
 
-    contact_records = [c.model_dump() for c in contacts]
-    contacts_df = pd.DataFrame(contact_records)
+    rows = []
+    for enriched in contacts:
+        base = {
+            "name": enriched.festival_name,
+            "Confidence": enriched.confidence,
+            "Source": enriched.source,
+            "Notes": enriched.notes,
+        }
+        if enriched.contacts:
+            for person in enriched.contacts:
+                rows.append({
+                    **base,
+                    "Contact Name": person.name,
+                    "Contact Role": person.role,
+                    "Contact Email": person.email,
+                })
+        else:
+            # No individuals found — still emit one row so the festival appears
+            rows.append({
+                **base,
+                "Contact Name": "",
+                "Contact Role": "",
+                "Contact Email": "",
+            })
+
+    contacts_df = pd.DataFrame(rows)
 
     if contacts_df.empty:
         print("No enriched contacts to save.")
         return contacts_df
-
-    contacts_df = contacts_df.rename(
-        columns={
-            "festival_name": "name",
-            "organizer_name": "Organizer Name",
-            "emails": "Emails",
-            "confidence": "Confidence",
-            "source": "Source",
-            "notes": "Notes",
-        }
-    )
 
     if not original_df.empty and "name" in original_df.columns:
         merged = original_df.merge(contacts_df, on="name", how="left")
@@ -131,5 +149,6 @@ def enriched_to_csv(
             "Verify all contact details before use."
         )
 
-    print(f"Saved enriched data for {len(contacts)} festivals to {output_path}")
+    total_contacts = sum(len(e.contacts) for e in contacts)
+    print(f"Saved {total_contacts} individual contacts across {len(contacts)} festivals to {output_path}")
     return merged

@@ -1,55 +1,94 @@
 find_contacts_task:
   description: >
-    Find contact information for the festival "{festival_name}" at {website}.
+    Find named individuals who work at "{festival_name}" ({website}).
 
     STEPS:
     1. Use WebsiteContactFinderTool with {website} to crawl contact pages
        (/contact, /about, /team, /press, /organizers, /submissions)
-    2. If the website finder returns limited results, use FirecrawlScrapeTool
-       directly on {website} and any specific contact pages you can identify
-    3. Extract:
-       - Organizer/promoter names (individuals or companies)
-       - Any email addresses visible on the site
-       - The website domain (for Hunter lookup in next task)
-       - Any social media or booking contact info
-       - Raw notes about what you found
+    2. If results are limited, use FirecrawlScrapeTool directly on {website}
+       and any staff/team/contact pages you identify
+    3. Use SerperDevTool to run each of the following searches and extract
+       any named individuals from the results:
+
+       Direct people searches:
+       - "{festival_name}" booking manager contact
+       - "{festival_name}" festival director OR organizer
+       - "{festival_name}" press contact email
+
+       LinkedIn-via-Google (search result snippets contain name + job title
+       without needing to access LinkedIn directly):
+       - site:linkedin.com/in "{festival_name}" booking
+       - site:linkedin.com/in "{festival_name}" festival director
+       - site:linkedin.com/in "{festival_name}" press OR media
+
+       Industry coverage:
+       - "{festival_name}" lineup announcement "{festival_name}" (finds press
+         releases that name specific people with their titles)
+
+    4. From all search result snippets and pages, extract:
+       - Full name of the individual
+       - Their specific role or job title
+       - Any email address mentioned
+    5. Note the website domain (e.g. festival.com) for the next task
 
   expected_output: >
-    A summary containing:
-    - Festival Name: {festival_name}
-    - Organizer/Company Names found: [names or "None found"]
-    - Email addresses found on site: [emails or "None visible"]
-    - Domain: [extracted domain, e.g. festival.com]
-    - Additional contact notes: [booking email hints, social handles, etc.]
+    A list of named individuals found for {festival_name}. For each person:
+    - Name: [full name]
+    - Role: [job title / function]
+    - Email: [if found, else "not found"]
+    - Source: [website / web search / linkedin snippet]
+
+    Also include:
+    - Domain: [e.g. festival.com]
+    - Notes: [booking form URLs, social contacts, anything else relevant]
   agent: contact_finder
 
 enrich_emails_task:
   description: >
-    Using the contact information found for "{festival_name}", enrich and verify
-    the email data using Hunter.io tools.
+    Using the individuals found for "{festival_name}", verify and enrich their
+    email addresses using Hunter.io, then output a structured contact list.
 
     STEPS:
     1. Extract the domain from {website} (strip https://, www., and paths)
-    2. Run HunterDomainSearchTool with the extracted domain to find associated emails
-    3. For any promising emails found (either on-site or via Hunter), run
-       HunterEmailVerifierTool to verify validity
-    4. Synthesize all findings into a confidence rating:
-       - "High": Direct email found on site AND verified by Hunter
-       - "Medium": Email found via Hunter domain search but not directly on site,
-         OR found on site but not verified
-       - "Low": No emails found, or verification failed
+    2. Run HunterDomainSearchTool with the domain — it returns people with names,
+       positions, and emails. Treat each result as a separate individual contact.
+    3. Merge Hunter results with findings from the previous task:
+       - If Hunter has an email for someone already found, combine into one entry
+       - If Hunter surfaces new people not found before, add them as new contacts
+    4. For any email addresses found (from website, web search, or Hunter), run
+       HunterEmailVerifierTool to confirm validity
+    5. Assign overall confidence:
+       - "High": Multiple named contacts with verified emails
+       - "Medium": At least one named contact found, email may be unverified;
+         OR only generic role emails (booking@, press@) without a named person
+       - "Low": No contacts found at all
 
-    Note: If HUNTER_API_KEY is not configured, rate the confidence based only
-    on what was found directly on the website.
+    Output one IndividualContact entry per person. Each must have:
+    - name: full name (or empty string if only a role email was found)
+    - role: job title / function (or empty string)
+    - email: email address (or empty string if unavailable)
 
   expected_output: >
-    Structured contact data for {festival_name}:
-    - festival_name: {festival_name}
-    - organizer_name: [best name found, or "Not Found"]
-    - emails: [comma-separated list of emails, or empty]
-    - confidence: [High | Medium | Low]
-    - source: [where emails came from: "website", "hunter", "both", or "none"]
-    - notes: [any relevant details about the contact data quality]
+    A JSON object matching this exact structure:
+    {
+      "festival_name": "{festival_name}",
+      "contacts": [
+        {"name": "Jane Smith", "role": "Booking Manager", "email": "jane@festival.com"},
+        {"name": "Tom Lee", "role": "Press & Media", "email": "tom@festival.com"}
+      ],
+      "confidence": "High",
+      "source": "linkedin+hunter",
+      "notes": "Jane found via LinkedIn snippet; email verified via Hunter."
+    }
+
+    If no individuals are found:
+    {
+      "festival_name": "{festival_name}",
+      "contacts": [],
+      "confidence": "Low",
+      "source": "none",
+      "notes": "No named contacts found via website, web search, LinkedIn, or Hunter."
+    }
   agent: email_enricher
   context:
     - find_contacts_task

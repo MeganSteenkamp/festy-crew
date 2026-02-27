@@ -1,6 +1,20 @@
+import concurrent.futures
 import os
 from crewai.tools import BaseTool
 from pydantic import Field
+
+
+def _scrape_with_timeout(app, url: str, timeout_seconds: int = 20):
+    """Run a Firecrawl scrape with a hard timeout to prevent hangs."""
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+    future = executor.submit(app.scrape, url, formats=["markdown"])
+    try:
+        result = future.result(timeout=timeout_seconds)
+        executor.shutdown(wait=False)
+        return result
+    except concurrent.futures.TimeoutError:
+        executor.shutdown(wait=False)
+        return None
 
 
 def _get_firecrawl_client():
@@ -22,7 +36,9 @@ class FirecrawlScrapeTool(BaseTool):
     def _run(self, url: str) -> str:
         try:
             app = _get_firecrawl_client()
-            result = app.scrape(url, formats=["markdown"])
+            result = _scrape_with_timeout(app, url)
+            if result is None:
+                return f"Timed out retrieving content from {url}"
             markdown = result.markdown or ""
             if not markdown:
                 return f"No content retrieved from {url}"
@@ -76,7 +92,9 @@ class WebsiteContactFinderTool(BaseTool):
         for path in contact_paths:
             url = f"{base_url}{path}"
             try:
-                result = app.scrape(url, formats=["markdown"])
+                result = _scrape_with_timeout(app, url)
+                if result is None:
+                    continue
                 markdown = result.markdown or ""
                 if markdown and len(markdown) > 100:
                     aggregated.append(f"=== {url} ===\n{markdown[:1500]}")
@@ -85,7 +103,9 @@ class WebsiteContactFinderTool(BaseTool):
 
         if not aggregated:
             try:
-                result = app.scrape(base_url, formats=["markdown"])
+                result = _scrape_with_timeout(app, base_url)
+                if result is None:
+                    return f"Timed out retrieving contact information from {base_url}"
                 markdown = result.markdown or ""
                 if markdown:
                     aggregated.append(f"=== {base_url} (homepage) ===\n{markdown[:2000]}")
